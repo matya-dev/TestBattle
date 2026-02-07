@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приветствие</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1A2026;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        .icon {
+            width: 100px;
+            height: 100px;
+            display: block;
+            margin-bottom: 25px;
+            border: none;
+            outline: none;
+            box-shadow: none;
+            object-fit: contain;
+        }
+        
+        h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .username {
+            color: #ffffff;
+            font-weight: 700;
+        }
+        
+        .description {
+            font-size: 15px;
+            margin-bottom: 30px;
+            max-width: 280px;
+            line-height: 1.5;
+            color: #cccccc;
+            font-weight: 400;
+        }
+        
+        .continue-btn {
+            background-color: #242D36;
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        .continue-btn:hover {
+            background-color: #2F3A44;
+        }
+        
+        .source-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 15px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <!-- Гифка без рамок и обводок -->
+    <img src="icon.gif" alt="" class="icon" id="userIcon">
+    
+    <!-- Текст приветствия -->
+    <h1>Привет, <span class="username" id="usernameDisplay">username</span>!</h1>
+    
+    <!-- Описание -->
+    <div class="description" id="descriptionText">
+        Добро пожаловать. Нажмите кнопку чтобы продолжить.
+    </div>
+    
+    <!-- Кнопка продолжить -->
+    <button class="continue-btn" id="continueButton">Продолжить</button>
+    
+    <!-- Информация об источнике запуска -->
+    <div class="source-info" id="sourceInfo"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameDisplay = document.getElementById('usernameDisplay');
+            const continueButton = document.getElementById('continueButton');
+            const userIcon = document.getElementById('userIcon');
+            const sourceInfo = document.getElementById('sourceInfo');
+            
+            // Функция для определения, запущено ли в Telegram Mini App
+            function isTelegramWebApp() {
+                // Проверяем наличие объекта Telegram Web App
+                if (window.Telegram && window.Telegram.WebApp) {
+                    return true;
+                }
+                
+                // Проверяем по user agent
+                const userAgent = navigator.userAgent.toLowerCase();
+                if (userAgent.includes('telegram') || userAgent.includes('webview')) {
+                    return true;
+                }
+                
+                // Проверяем по URL параметрам (Telegram Mini Apps часто имеют параметры)
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('tgWebAppData') || urlParams.has('tgWebAppVersion')) {
+                    return true;
+                }
+                
+                return false;
+            }
+            
+            // Получение username
+            function getUsername() {
+                // Сначала проверяем Telegram Mini App
+                if (isTelegramWebApp()) {
+                    try {
+                        // Инициализируем Telegram Web App
+                        const tg = window.Telegram.WebApp;
+                        
+                        // Расширяем окно на весь экран
+                        tg.expand();
+                        
+                        // Показываем информацию о запуске в Telegram
+                        sourceInfo.textContent = 'Запущено в Telegram Mini App';
+                        sourceInfo.style.color = '#4A6FA5';
+                        
+                        // Пробуем получить username разными способами
+                        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                            const user = tg.initDataUnsafe.user;
+                            
+                            // Используем username, если есть
+                            if (user.username) {
+                                return '@' + user.username;
+                            }
+                            
+                            // Или имя и фамилию
+                            if (user.first_name) {
+                                let name = user.first_name;
+                                if (user.last_name) {
+                                    name += ' ' + user.last_name;
+                                }
+                                return name;
+                            }
+                        }
+                        
+                        // Если не удалось получить данные пользователя
+                        return 'Telegram пользователь';
+                        
+                    } catch (error) {
+                        console.error('Ошибка при работе с Telegram Web App:', error);
+                        return 'Telegram пользователь';
+                    }
+                }
+                
+                // Если не в Telegram - проверяем URL параметр
+                const urlParams = new URLSearchParams(window.location.search);
+                const usernameFromUrl = urlParams.get('username');
+                
+                // Устанавливаем информацию об источнике
+                if (usernameFromUrl) {
+                    sourceInfo.textContent = 'Username из URL параметра';
+                } else {
+                    sourceInfo.textContent = 'Username по умолчанию';
+                }
+                
+                return usernameFromUrl || 'username';
+            }
+            
+            // Устанавливаем username
+            usernameDisplay.textContent = getUsername();
+            
+            // Обработчик нажатия кнопки
+            continueButton.addEventListener('click', function() {
+                const username = usernameDisplay.textContent;
+                
+                // Если запущено в Telegram, можем использовать Telegram API для перехода
+                if (isTelegramWebApp() && window.Telegram && window.Telegram.WebApp) {
+                    try {
+                        const tg = window.Telegram.WebApp;
+                        
+                        // Закрываем Mini App или переходим дальше
+                        // tg.close(); // Закрыть Mini App
+                        // Или открываем ссылку
+                        tg.openLink('main.html');
+                        return;
+                    } catch (error) {
+                        console.error('Ошибка Telegram API:', error);
+                    }
+                }
+                
+                // Стандартный переход для браузера
+                window.location.href = 'main.html';
+            });
+            
+            // Обработчик ошибки загрузки гифки
+            userIcon.onerror = function() {
+                // Простая замена
+                userIcon.style.display = 'none';
+                const altText = document.createElement('div');
+                altText.textContent = '👋';
+                altText.style.fontSize = '60px';
+                altText.style.marginBottom = '20px';
+                document.body.insertBefore(altText, document.querySelector('h1'));
+            };
+            
+            // Информация для отладки
+            console.log('Запущено в Telegram Mini App:', isTelegramWebApp());
+            console.log('Username установлен:', usernameDisplay.textContent);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "id": "case1",
+  "name": "Тестовый кейс",
+  "cost": 50,
+  "rewards": [
+    {
+      "id": "gift1",
+      "name": "Plush Pepe",
+      "icon": "data/pepe.gif",
+      "price": 100000,
+      "probability": 0.5
+    },
+    {
+      "id": "gift2",
+      "name": "kolobok",
+      "icon": "data/kolobok.gif",
+      "price": 100000,
+      "probability": 0.5
+    }
+  ]
+}

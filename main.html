@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Запрет выделения текста */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background-color: #1A2026;
+            color: white;
+            min-height: 100vh;
+            padding-bottom: 80px;
+            position: relative;
+        }
+        
+        /* Балланс в правом верхнем углу */
+        .balance-container {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            background-color: rgba(36, 45, 54, 0.8);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+        
+        .balance-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            border: none;
+            outline: none;
+            box-shadow: none;
+            object-fit: contain;
+        }
+        
+        .balance-amount {
+            font-weight: 700;
+            font-size: 16px;
+            color: #ffffff;
+        }
+        
+        /* Контейнер контента */
+        .content-container {
+            padding: 80px 20px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Стили для разных экранов */
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Навигационная панель */
+        .navBar_wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            bottom: 16px;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            z-index: 90;
+            padding: 0 16px;
+        }
+
+        .navBar {
+            padding: 3px;
+            height: 100%;
+            background-color: rgba(52, 64, 76, 0.5);
+            border-radius: 999px;
+            backdrop-filter: blur(20px);
+            display: flex;
+            gap: 3px;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .navBarHighlight {
+            position: absolute;
+            top: 3px;
+            bottom: 3px;
+            width: var(--highlight-width, 120px);
+            left: var(--highlight-left, 0px);
+            background-color: rgba(52, 64, 76, 0.6);
+            border-radius: 999px;
+            transition: left 0.3s ease, width 0.3s ease;
+            z-index: 0;
+        }
+
+        .navBarTab {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border-radius: 999px;
+            cursor: pointer;
+            color: #a0aec0;
+            transition: color 0.25s ease;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .navBarTab.active {
+            color: #248bda;
+        }
+
+        .navBarTab i {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        .navBarTab span {
+            font-size: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        /* Контент главной страницы - ТЕСТОВЫЙ КЕЙС */
+        .welcome-message {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            color: #ffffff;
+            text-align: center;
+        }
+        
+        /* Контейнер кейса */
+        .case-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .case-info {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .case-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+        
+        .case-description {
+            color: #a0aec0;
+            font-size: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .case-cost {
+            display: inline-flex;
+            align-items: center;
+            background-color: #242D36;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .case-cost i {
+            color: #FFD700;
+            margin-right: 8px;
+        }
+        
+        /* Витрина кейса */
+        .case-showcase {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .case-box {
+            width: 200px;
+            height: 200px;
+            background-color: #242D36;
+            border: 3px solid #2F3A44;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .case-box:hover {
+            border-color: #248bda;
+            transform: translateY(-5px);
+        }
+        
+        .case-box.active {
+            border-color: #248bda;
+            box-shadow: 0 0 20px rgba(36, 139, 218, 0.3);
+        }
+        
+        .case-box-icon {
+            font-size: 60px;
+            color: #248bda;
+        }
+        
+        .case-box-label {
+            position: absolute;
+            bottom: 12px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        /* Кнопка крутки */
+        .spin-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .spin-btn {
+            background-color: #248bda;
+            color: white;
+            border: none;
+            padding: 16px 48px;
+            font-size: 18px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .spin-btn:hover:not(:disabled) {
+            background-color: #1c76c2;
+            transform: translateY(-3px);
+        }
+        
+        .spin-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #2F3A44;
+        }
+        
+        /* Подарки в кейсе */
+        .case-rewards {
+            background-color: #242D36;
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 20px;
+        }
+        
+        .case-rewards-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .reward-item {
+            background-color: #2F3A44;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .reward-item.active {
+            border-color: #248bda;
+            box-shadow: 0 0 15px rgba(36, 139, 218, 0.2);
+        }
+        
+        .reward-icon {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 12px;
+            border: none;
+            outline: none;
+            box-shadow: none;
+        }
+        
+        .reward-name {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .reward-price {
+            color: #FFD700;
+            font-size: 14px;
+        }
+        
+        /* Анимация крутки */
+        @keyframes spinCase {
+            0% { transform: rotateY(0deg); }
+            25% { transform: rotateY(90deg); }
+            50% { transform: rotateY(180deg); }
+            75% { transform: rotateY(270deg); }
+            100% { transform: rotateY(360deg); }
+        }
+        
+        .case-box.spinning {
+            animation: spinCase 1s ease-in-out;
+        }
+        
+        /* Результат крутки */
+        .result-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .result-container.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .result-card {
+            background-color: #242D36;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 3px solid #2F3A44;
+            animation: popIn 0.5s ease;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .result-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 24px;
+        }
+        
+        .result-reward {
+            background-color: #2F3A44;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .result-reward-icon {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 16px;
+            border: none;
+            outline: none;
+            box-shadow: none;
+        }
+        
+        .result-reward-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+        
+        .result-reward-price {
+            color: #FFD700;
+            font-size: 16px;
+        }
+        
+        .result-actions {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .result-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        
+        .result-btn.ok {
+            background-color: #248bda;
+            color: white;
+        }
+        
+        .result-btn.ok:hover {
+            background-color: #1c76c2;
+        }
+        
+        /* Контент инвентаря */
+        .inventory-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+        
+        .inventory-empty-icon {
+            font-size: 60px;
+            color: #2F3A44;
+            margin-bottom: 20px;
+        }
+        
+        .inventory-empty-text {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        
+        .inventory-empty-subtext {
+            font-size: 14px;
+        }
+        
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        
+        .inventory-item {
+            background-color: #242D36;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #2F3A44;
+            transition: all 0.3s ease;
+        }
+        
+        .inventory-item:hover {
+            border-color: #248bda;
+            transform: translateY(-5px);
+        }
+        
+        .inventory-item-icon {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 12px;
+            border: none;
+            outline: none;
+            box-shadow: none;
+        }
+        
+        .inventory-item-name {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .inventory-item-price {
+            color: #FFD700;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        
+        .inventory-item-sell {
+            background-color: #248bda;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        
+        .inventory-item-sell:hover {
+            background-color: #1c76c2;
+        }
+        
+        /* КОНТЕНТ ПРОФИЛЯ (старый дизайн) */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #242D36;
+            border: 3px solid #2F3A44;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .profile-avatar-default {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #248bda;
+            background: linear-gradient(135deg, #242D36, #2F3A44);
+        }
+        
+        .profile-info {
+            flex: 1;
+        }
+        
+        .profile-main-info {
+            margin-bottom: 20px;
+        }
+        
+        .profile-username {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+        
+        .profile-user-id {
+            font-size: 14px;
+            color: #a0aec0;
+            background-color: #2F3A44;
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        
+        .profile-level {
+            font-size: 16px;
+            color: #248bda;
+            font-weight: 600;
+        }
+        
+        /* Шкала опыта */
+        .xp-container {
+            background-color: #242D36;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .xp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .xp-label {
+            font-size: 16px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        
+        .xp-level {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            background-color: #248bda;
+            padding: 6px 16px;
+            border-radius: 20px;
+        }
+        
+        .xp-bar {
+            height: 14px;
+            background-color: #2F3A44;
+            border-radius: 7px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 8px;
+        }
+        
+        .xp-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #248bda, #3ba1ff);
+            border-radius: 7px;
+            transition: width 0.5s ease;
+        }
+        
+        .xp-text {
+            font-size: 13px;
+            color: #a0aec0;
+            text-align: center;
+        }
+        
+        /* Кнопка сброса прогресса */
+        .reset-container {
+            background-color: #242D36;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .reset-warning {
+            color: #ff6b6b;
+            font-size: 14px;
+            margin-bottom: 16px;
+            line-height: 1.4;
+        }
+        
+        .reset-btn {
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .reset-btn:hover {
+            background-color: #ff5252;
+            transform: translateY(-2px);
+        }
+        
+        .reset-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Статистика профиля */
+        .profile-stats {
+            background-color: #242D36;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .profile-stats h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #ffffff;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #2F3A44;
+        }
+        
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: #a0aec0;
+        }
+        
+        .stat-value {
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        /* Модальное окно подтверждения сброса */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal {
+            background-color: #242D36;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            border: 2px solid #2F3A44;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .modal-text {
+            color: #a0aec0;
+            margin-bottom: 24px;
+            text-align: center;
+            line-height: 1.5;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        
+        .modal-btn.cancel {
+            background-color: #2F3A44;
+            color: #ffffff;
+        }
+        
+        .modal-btn.cancel:hover {
+            background-color: #3A4652;
+        }
+        
+        .modal-btn.confirm {
+            background-color: #ff6b6b;
+            color: white;
+        }
+        
+        .modal-btn.confirm:hover {
+            background-color: #ff5252;
+        }
+        
+        /* Уведомления */
+        .notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background-color: #242D36;
+            border-left: 4px solid #248bda;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            z-index: 999;
+            display: none;
+            max-width: 300px;
+        }
+        
+        .notification.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+        }
+        
+        .notification-text {
+            color: #a0aec0;
+            font-size: 14px;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .content-container {
+                padding: 70px 16px 16px;
+            }
+            
+            .welcome-message {
+                font-size: 24px;
+            }
+            
+            .case-showcase {
+                gap: 20px;
+            }
+            
+            .case-box {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .rewards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-avatar {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .balance-container {
+                padding: 6px 12px;
+                top: 12px;
+                right: 12px;
+            }
+            
+            .navBar_wrapper {
+                padding: 0 12px;
+            }
+            
+            .case-box {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .case-box-icon {
+                font-size: 40px;
+            }
+            
+            .spin-btn {
+                padding: 14px 32px;
+                font-size: 16px;
+            }
+            
+            .inventory-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .rewards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Баланс в правом верхнем углу -->
+    <div class="balance-container">
+        <img src="star.png" alt="Звезда" class="balance-icon" id="starIcon">
+        <span class="balance-amount" id="balanceAmount">500</span>
+    </div>
+    
+    <!-- Контейнер контента -->
+    <div class="content-container">
+        <!-- Главный экран -->
+        <div class="screen active" id="mainScreen">
+            <h1 class="welcome-message" id="welcomeMessage">Добро пожаловать!</h1>
+            
+            <div class="case-container">
+                <div class="case-info">
+                    <h2 class="case-title">Тестовый кейс</h2>
+                    <p class="case-description">Открой кейс и получи случайный подарок!</p>
+                    <div class="case-cost">
+                        <i class="fas fa-star"></i>
+                        <span>Стоимость крутки: 50 звезд</span>
+                    </div>
+                </div>
+                
+                <div class="case-showcase">
+                    <div class="case-box active" id="testCase" data-case="case1">
+                        <i class="fas fa-gift case-box-icon"></i>
+                        <div class="case-box-label">Тестовый кейс</div>
+                    </div>
+                </div>
+                
+                <div class="spin-section">
+                    <button class="spin-btn" id="spinBtn">
+                        <i class="fas fa-redo-alt"></i>
+                        Крутить за 50 <i class="fas fa-star" style="color: #FFD700;"></i>
+                    </button>
+                </div>
+                
+                <div class="case-rewards" id="caseRewards">
+                    <!-- Подарки из кейса будут загружены через JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Экран инвентаря -->
+        <div class="screen" id="inventoryScreen">
+            <div id="inventoryContent">
+                <!-- Инвентарь будет загружен через JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Экран профиля -->
+        <div class="screen" id="profileScreen">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">
+                    <div class="profile-avatar-default">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="profile-info">
+                    <div class="profile-main-info">
+                        <h1 class="profile-username" id="profileUsername">Загрузка...</h1>
+                        <div class="profile-user-id" id="profileUserId">ID: #000000</div>
+                        <div class="profile-level">Уровень <span id="profileLevel">1</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Шкала опыта -->
+            <div class="xp-container">
+                <div class="xp-header">
+                    <span class="xp-label">Прогресс</span>
+                    <span class="xp-level">Уровень <span id="xpLevel">1</span></span>
+                </div>
+                <div class="xp-bar">
+                    <div class="xp-fill" id="xpFill"></div>
+                </div>
+                <div class="xp-text" id="xpText">0/100 опыта</div>
+            </div>
+            
+            <!-- Кнопка сброса прогресса -->
+            <div class="reset-container">
+                <div class="reset-warning">
+                    Внимание! Сброс прогресса удалит весь ваш опыт, уровень и статистику. Это действие нельзя отменить.
+                </div>
+                <button class="reset-btn" id="resetProgressBtn">
+                    <i class="fas fa-trash-alt"></i> Сбросить прогресс
+                </button>
+            </div>
+            
+            <!-- Статистика профиля -->
+            <div class="profile-stats">
+                <h3>Статистика</h3>
+                <div class="stat-row">
+                    <span class="stat-label">Всего круток</span>
+                    <span class="stat-value" id="totalSpins">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Получено подарков</span>
+                    <span class="stat-value" id="totalGifts">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Потрачено звезд</span>
+                    <span class="stat-value" id="spentStars">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Дней в игре</span>
+                    <span class="stat-value" id="daysPlayed">1</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Результат крутки -->
+    <div class="result-container" id="resultContainer">
+        <div class="result-card">
+            <h2 class="result-title">Вы выиграли!</h2>
+            <div class="result-reward" id="resultReward">
+                <!-- Будет заполнено через JavaScript -->
+            </div>
+            <div class="result-actions">
+                <button class="result-btn ok" id="resultOkBtn">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно подтверждения сброса -->
+    <div class="modal-overlay" id="resetModal">
+        <div class="modal">
+            <h2 class="modal-title">Подтверждение сброса</h2>
+            <p class="modal-text">
+                Вы уверены, что хотите сбросить весь прогресс?<br>
+                Все данные будут удалены без возможности восстановления.
+            </p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="cancelResetBtn">Отмена</button>
+                <button class="modal-btn confirm" id="confirmResetBtn">Сбросить прогресс</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Уведомление -->
+    <div class="notification" id="notification">
+        <div class="notification-title" id="notificationTitle"></div>
+        <div class="notification-text" id="notificationText"></div>
+    </div>
+    
+    <!-- Навигационная панель -->
+    <div class="navBar_wrapper">
+        <div class="navBar" id="navBar">
+            <div class="navBarHighlight" id="navHighlight"></div>
+            <div class="navBarTab active" data-screen="main">
+                <i class="fas fa-gift"></i>
+                <span>Кейсы</span>
+            </div>
+            <div class="navBarTab" data-screen="inventory">
+                <i class="fas fa-box-open"></i>
+                <span>Инвентарь</span>
+            </div>
+            <div class="navBarTab" data-screen="profile">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let userData = null;
+        let caseConfig = null;
+        
+        // Конфиг кейса
+        caseConfig = {
+            "id": "case1",
+            "name": "Тестовый кейс",
+            "cost": 50,
+            "rewards": [
+                {
+                    "id": "gift1",
+                    "name": "Plush Pepe",
+                    "icon": "data/pepe.gif",
+                    "price": 100000,
+                    "probability": 0.5
+                },
+                {
+                    "id": "gift2",
+                    "name": "kolobok",
+                    "icon": "data/kolobok.gif",
+                    "price": 100000,
+                    "probability": 0.5
+                }
+            ]
+        };
+        
+        // Генерация ID пользователя
+        function generateUserId() {
+            return '#' + Math.floor(100000 + Math.random() * 900000);
+        }
+        
+        // Получение username из предыдущей страницы
+        function getUsernameFromStorage() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const usernameFromUrl = urlParams.get('username');
+            const usernameFromStorage = localStorage.getItem('username');
+            return usernameFromUrl || usernameFromStorage || 'Игрок';
+        }
+        
+        // Загрузка данных из localStorage
+        function loadUserData() {
+            const savedData = localStorage.getItem('userData');
+            if (savedData) {
+                userData = JSON.parse(savedData);
+                console.log('Данные загружены из localStorage:', userData);
+            } else {
+                // Новый пользователь
+                userData = {
+                    username: getUsernameFromStorage(),
+                    userId: generateUserId(),
+                    balance: 500,
+                    level: 1,
+                    xp: 0,
+                    xpNeeded: 100,
+                    inventory: [],
+                    stats: {
+                        totalSpins: 0,
+                        totalGifts: 0,
+                        spentStars: 0,
+                        daysPlayed: 1,
+                        joinDate: new Date().toISOString().split('T')[0]
+                    }
+                };
+                console.log('Создан новый пользователь:', userData);
+            }
+        }
+        
+        // Сохранение данных в localStorage
+        function saveUserData() {
+            localStorage.setItem('userData', JSON.stringify(userData));
+            console.log('Данные сохранены в localStorage');
+        }
+        
+        // Инициализация интерфейса
+        function initInterface() {
+            console.log('Инициализация интерфейса...');
+            
+            // Устанавливаем имя
+            document.getElementById('welcomeMessage').textContent = `Добро пожаловать, ${userData.username}!`;
+            document.getElementById('profileUsername').textContent = userData.username;
+            document.getElementById('profileUserId').textContent = `ID: ${userData.userId}`;
+            document.getElementById('profileLevel').textContent = userData.level;
+            document.getElementById('xpLevel').textContent = userData.level;
+            
+            // Обновляем баланс
+            updateBalance();
+            
+            // Обновляем статистику
+            updateStats();
+            
+            // Обновляем шкалу опыта
+            updateXpBar();
+            
+            // Загружаем награды кейса
+            loadCaseRewards();
+            
+            // Загружаем инвентарь
+            loadInventory();
+            
+            // Сохраняем имя
+            localStorage.setItem('username', userData.username);
+            
+            console.log('Интерфейс инициализирован');
+        }
+        
+        // Загрузка наград кейса
+        function loadCaseRewards() {
+            console.log('Загрузка наград кейса...');
+            
+            const caseRewards = document.getElementById('caseRewards');
+            if (!caseRewards) {
+                console.error('Элемент caseRewards не найден!');
+                return;
+            }
+            
+            caseRewards.innerHTML = `
+                <div class="case-rewards-title">Подарки в кейсе (2 предмета)</div>
+                <div class="rewards-grid">
+                    ${caseConfig.rewards.map(reward => `
+                        <div class="reward-item" data-reward-id="${reward.id}">
+                            <img src="${reward.icon}" class="reward-icon" alt="${reward.name}" />
+                            <div class="reward-name">${reward.name}</div>
+                            <div class="reward-price">${reward.price.toLocaleString('ru-RU')} <i class="fas fa-star" style="color: #FFD700;"></i></div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Обработка ошибок загрузки изображений
+            document.querySelectorAll('.reward-icon').forEach(img => {
+                img.onerror = function() {
+                    console.log(`Ошибка загрузки изображения: ${this.src}`);
+                    this.style.display = 'none';
+                    const parent = this.parentNode;
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-gift';
+                    icon.style.fontSize = '40px';
+                    icon.style.color = '#248bda';
+                    icon.style.marginBottom = '12px';
+                    parent.insertBefore(icon, this);
+                };
+            });
+            
+            console.log('Награды кейса загружены');
+        }
+        
+        // Обновление баланса
+        function updateBalance() {
+            const balanceAmount = document.getElementById('balanceAmount');
+            const spinBtn = document.getElementById('spinBtn');
+            
+            if (balanceAmount) {
+                balanceAmount.textContent = userData.balance;
+            }
+            
+            if (spinBtn) {
+                spinBtn.disabled = userData.balance < caseConfig.cost;
+                console.log(`Баланс: ${userData.balance}, Крутка доступна: ${!spinBtn.disabled}`);
+            }
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            const elements = {
+                totalSpins: document.getElementById('totalSpins'),
+                totalGifts: document.getElementById('totalGifts'),
+                spentStars: document.getElementById('spentStars'),
+                daysPlayed: document.getElementById('daysPlayed')
+            };
+            
+            for (const [key, element] of Object.entries(elements)) {
+                if (element && userData.stats[key] !== undefined) {
+                    element.textContent = userData.stats[key];
+                }
+            }
+        }
+        
+        // Обновление шкалы опыта
+        function updateXpBar() {
+            const xpFill = document.getElementById('xpFill');
+            const xpText = document.getElementById('xpText');
+            
+            if (xpFill && xpText) {
+                const xpPercentage = (userData.xp / userData.xpNeeded) * 100;
+                const displayPercentage = Math.min(xpPercentage, 100);
+                
+                xpFill.style.width = `${displayPercentage}%`;
+                xpText.textContent = `${userData.xp}/${userData.xpNeeded} опыта`;
+            }
+        }
+        
+        // Загрузка инвентаря
+        function loadInventory() {
+            const inventoryContent = document.getElementById('inventoryContent');
+            if (!inventoryContent) return;
+            
+            if (userData.inventory.length === 0) {
+                inventoryContent.innerHTML = `
+                    <div class="inventory-empty">
+                        <div class="inventory-empty-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <div class="inventory-empty-text">Инвентарь пуст</div>
+                        <div class="inventory-empty-subtext">Откройте кейсы, чтобы получить подарки!</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            inventoryContent.innerHTML = `
+                <div class="inventory-grid">
+                    ${userData.inventory.map((item, index) => `
+                        <div class="inventory-item" data-item-index="${index}">
+                            <img src="${item.icon}" class="inventory-item-icon" alt="${item.name}" />
+                            <div class="inventory-item-name">${item.name}</div>
+                            <div class="inventory-item-price">${item.price.toLocaleString('ru-RU')} <i class="fas fa-star" style="color: #FFD700;"></i></div>
+                            <button class="inventory-item-sell" onclick="sellItem(${index})">
+                                <i class="fas fa-coins"></i> Продать
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Обработка ошибок загрузки изображений
+            document.querySelectorAll('.inventory-item-icon').forEach(img => {
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    const parent = this.parentNode;
+                    const icon = document.createElement('i');
+                    icon.className = 'fas fa-gift';
+                    icon.style.fontSize = '40px';
+                    icon.style.color = '#248bda';
+                    icon.style.marginBottom = '12px';
+                    parent.insertBefore(icon, this);
+                };
+            });
+        }
+        
+        // Крутка кейса
+        function spinCase() {
+            console.log('Начало крутки...');
+            
+            // Проверяем баланс
+            if (userData.balance < caseConfig.cost) {
+                showNotification('Недостаточно звезд', `Для крутки нужно ${caseConfig.cost} звезд`);
+                return;
+            }
+            
+            const testCase = document.getElementById('testCase');
+            const spinBtn = document.getElementById('spinBtn');
+            
+            // Спиним анимацию
+            testCase.classList.add('spinning');
+            spinBtn.disabled = true;
+            
+            // Снимаем звезды
+            userData.balance -= caseConfig.cost;
+            userData.stats.spentStars += caseConfig.cost;
+            userData.stats.totalSpins += 1;
+            
+            // Обновляем баланс и статистику
+            updateBalance();
+            updateStats();
+            saveUserData();
+            
+            // Через 1 секунду показываем результат
+            setTimeout(() => {
+                // Останавливаем анимацию
+                testCase.classList.remove('spinning');
+                
+                // Выбираем случайный подарок
+                const reward = getRandomReward();
+                console.log('Выпал подарок:', reward);
+                
+                // Добавляем в инвентарь
+                addToInventory(reward);
+                
+                // Показываем результат
+                showResult(reward);
+            }, 1000);
+        }
+        
+        // Выбор случайного подарка
+        function getRandomReward() {
+            const random = Math.random();
+            console.log(`Случайное число: ${random}`);
+            
+            if (random < 0.5) {
+                console.log('Выбран Plush Pepe');
+                return { ...caseConfig.rewards[0] };
+            } else {
+                console.log('Выбран kolobok');
+                return { ...caseConfig.rewards[1] };
+            }
+        }
+        
+        // Добавление подарка в инвентарь
+        function addToInventory(reward) {
+            userData.inventory.push(reward);
+            userData.stats.totalGifts += 1;
+            
+            // Добавляем опыт
+            userData.xp += 10;
+            
+            // Проверяем уровень
+            checkLevelUp();
+            
+            // Сохраняем и обновляем
+            saveUserData();
+            updateXpBar();
+            updateStats();
+            
+            console.log(`Подарок "${reward.name}" добавлен в инвентарь`);
+        }
+        
+        // Проверка повышения уровня
+        function checkLevelUp() {
+            if (userData.xp >= userData.xpNeeded) {
+                userData.level += 1;
+                userData.xp = userData.xp - userData.xpNeeded;
+                userData.xpNeeded = Math.floor(userData.xpNeeded * 1.5);
+                
+                saveUserData();
+                updateXpBar();
+                
+                showNotification('Новый уровень!', `Поздравляем! Вы достигли ${userData.level} уровня!`);
+            }
+        }
+        
+        // Показ результата
+        function showResult(reward) {
+            const resultReward = document.getElementById('resultReward');
+            const resultContainer = document.getElementById('resultContainer');
+            
+            resultReward.innerHTML = `
+                <img src="${reward.icon}" class="result-reward-icon" alt="${reward.name}" />
+                <div class="result-reward-name">${reward.name}</div>
+                <div class="result-reward-price">${reward.price.toLocaleString('ru-RU')} <i class="fas fa-star" style="color: #FFD700;"></i></div>
+            `;
+            
+            // Обработка ошибки изображения
+            const img = resultReward.querySelector('img');
+            img.onerror = function() {
+                this.style.display = 'none';
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-gift';
+                icon.style.fontSize = '60px';
+                icon.style.color = '#248bda';
+                icon.style.marginBottom = '16px';
+                resultReward.insertBefore(icon, this);
+            };
+            
+            resultContainer.classList.add('active');
+        }
+        
+        // Продажа предмета
+        function sellItem(itemIndex) {
+            const item = userData.inventory[itemIndex];
+            
+            if (!item) {
+                console.error('Предмет не найден:', itemIndex);
+                return;
+            }
+            
+            // Добавляем звезды
+            userData.balance += item.price;
+            
+            // Удаляем из инвентаря
+            userData.inventory.splice(itemIndex, 1);
+            
+            // Сохраняем и обновляем
+            saveUserData();
+            updateBalance();
+            loadInventory();
+            
+            showNotification('Предмет продан', `Вы получили ${item.price.toLocaleString('ru-RU')} звезд за "${item.name}"`);
+        }
+        
+        // Сброс прогресса
+        function resetProgress() {
+            // Сохраняем только данные профиля
+            const profileData = {
+                username: userData.username,
+                userId: userData.userId,
+                stats: {
+                    daysPlayed: userData.stats.daysPlayed,
+                    joinDate: userData.stats.joinDate
+                }
+            };
+            
+            // Сбрасываем игровые данные
+            userData = {
+                ...profileData,
+                balance: 500,
+                level: 1,
+                xp: 0,
+                xpNeeded: 100,
+                inventory: [],
+                stats: {
+                    ...profileData.stats,
+                    totalSpins: 0,
+                    totalGifts: 0,
+                    spentStars: 0
+                }
+            };
+            
+            // Сохраняем и обновляем интерфейс
+            saveUserData();
+            updateBalance();
+            updateXpBar();
+            updateStats();
+            loadInventory();
+            
+            // Закрываем модальное окно
+            document.getElementById('resetModal').classList.remove('active');
+            
+            // Показываем сообщение
+            showNotification('Прогресс сброшен', 'Все данные успешно сброшены!');
+        }
+        
+        // Показать уведомление
+        function showNotification(title, text) {
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notificationTitle');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationTitle.textContent = title;
+            notificationText.textContent = text;
+            
+            notification.classList.add('active');
+            
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 3000);
+        }
+        
+        // Настройка подсветки навигации
+        function updateNavHighlight(activeTab) {
+            const navBar = document.getElementById('navBar');
+            const navHighlight = document.getElementById('navHighlight');
+            
+            const tabRect = activeTab.getBoundingClientRect();
+            const navRect = navBar.getBoundingClientRect();
+            const left = tabRect.left - navRect.left;
+            const width = tabRect.width;
+            
+            navHighlight.style.setProperty('--highlight-left', left + 'px');
+            navHighlight.style.setProperty('--highlight-width', width + 'px');
+        }
+        
+        // Переключение экранов
+        function switchScreen(screenId) {
+            // Скрываем все экраны
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Показываем выбранный экран
+            const activeScreen = document.getElementById(screenId + 'Screen');
+            if (activeScreen) {
+                activeScreen.classList.add('active');
+            }
+            
+            // Обновляем активную вкладку
+            document.querySelectorAll('.navBarTab').forEach(tab => {
+                if (tab.dataset.screen === screenId) {
+                    tab.classList.add('active');
+                    updateNavHighlight(tab);
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // При переключении на инвентарь обновляем его
+            if (screenId === 'inventory') {
+                loadInventory();
+            }
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM загружен, инициализация...');
+            
+            // Загружаем данные
+            loadUserData();
+            initInterface();
+            
+            // Обработчики событий
+            document.getElementById('spinBtn').addEventListener('click', spinCase);
+            document.getElementById('resultOkBtn').addEventListener('click', function() {
+                document.getElementById('resultContainer').classList.remove('active');
+                document.getElementById('spinBtn').disabled = false;
+            });
+            
+            // Обработчики для кнопки сброса прогресса
+            document.getElementById('resetProgressBtn').addEventListener('click', function() {
+                document.getElementById('resetModal').classList.add('active');
+            });
+            
+            document.getElementById('cancelResetBtn').addEventListener('click', function() {
+                document.getElementById('resetModal').classList.remove('active');
+            });
+            
+            document.getElementById('confirmResetBtn').addEventListener('click', resetProgress);
+            
+            // Закрытие модальных окон по клику на оверлей
+            document.getElementById('resetModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+            
+            document.getElementById('resultContainer').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+            
+            // Обработчики навигации
+            document.querySelectorAll('.navBarTab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchScreen(this.dataset.screen);
+                });
+            });
+            
+            // Обработчик ошибки загрузки звезды PNG
+            const starIcon = document.getElementById('starIcon');
+            if (starIcon) {
+                starIcon.onerror = function() {
+                    this.style.display = 'none';
+                    const faStar = document.createElement('div');
+                    faStar.innerHTML = '<i class="fas fa-star"></i>';
+                    faStar.style.display = 'flex';
+                    faStar.style.alignItems = 'center';
+                    faStar.style.justifyContent = 'center';
+                    faStar.style.width = '20px';
+                    faStar.style.height = '20px';
+                    faStar.style.marginRight = '8px';
+                    faStar.style.color = '#FFD700';
+                    faStar.style.fontSize = '16px';
+                    this.parentNode.insertBefore(faStar, this);
+                };
+            }
+            
+            // Обновляем при изменении размера окна
+            window.addEventListener('resize', function() {
+                const activeTab = document.querySelector('.navBarTab.active');
+                if (activeTab) updateNavHighlight(activeTab);
+            });
+            
+            // Инициализируем навигацию
+            const activeTab = document.querySelector('.navBarTab.active');
+            if (activeTab) updateNavHighlight(activeTab);
+            
+            console.log('Приложение инициализировано');
+            console.log('Конфиг кейса:', caseConfig);
+            console.log('Данные пользователя:', userData);
+        });
+        
+        // Делаем функции глобальными для обработчиков onclick
+        window.sellItem = sellItem;
+    </script>
+</body>
+</html>
