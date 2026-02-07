@@ -6,9 +6,7 @@
     <title>Главная</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Весь остальной CSS остается без изменений */
         /* Запрет выделения текста */
         * {
             margin: 0;
@@ -1078,52 +1076,12 @@
         </div>
     </div>
 
-<script>
-    // ДОБАВИТЬ ЭТО В НАЧАЛО ФАЙЛА main.html
-    
-    // Проверка Telegram Mini App и настройка интерфейса
-    document.addEventListener('DOMContentLoaded', function() {
-        // Проверяем, запущено ли в Telegram
-        const isTelegram = window.Telegram && window.Telegram.WebApp;
+    <script>
+        // ===============================
+        // ОСНОВНОЙ КОД ПРИЛОЖЕНИЯ
+        // ===============================
         
-        if (isTelegram) {
-            const tg = window.Telegram.WebApp;
-            
-            // Расширяем на весь экран
-            tg.expand();
-            
-            // Настраиваем тему под Telegram
-            if (tg.colorScheme === 'dark') {
-                // Telegram использует темную тему
-                document.documentElement.style.setProperty('--tg-theme-bg-color', '#1A2026');
-                document.documentElement.style.setProperty('--tg-theme-text-color', '#ffffff');
-            }
-            
-            // Получаем данные пользователя из Telegram
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                const user = tg.initDataUnsafe.user;
-                let username = 'Игрок';
-                
-                if (user.username) {
-                    username = user.username;
-                } else if (user.first_name) {
-                    username = user.first_name;
-                    if (user.last_name) {
-                        username += ' ' + user.last_name;
-                    }
-                }
-                
-                // Сохраняем в localStorage
-                localStorage.setItem('username', username);
-                localStorage.setItem('telegram_user_id', user.id || '');
-                
-                // Если есть photo_url, можно сохранить аватар
-                if (user.photo_url) {
-                    localStorage.setItem('user_avatar', user.photo_url);
-                }
-            }
-        }
-        
+        // Глобальные переменные
         let userData = null;
         let caseConfig = null;
         
@@ -1150,29 +1108,102 @@
             ]
         };
         
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Приложение загружается...');
+            
+            // 1. Инициализируем Telegram (если есть)
+            initTelegram();
+            
+            // 2. Загружаем данные пользователя
+            loadUserData();
+            
+            // 3. Инициализируем интерфейс
+            initInterface();
+            
+            // 4. Настраиваем обработчики событий
+            setupEventListeners();
+            
+            // 5. Инициализируем навигацию
+            initNavigation();
+            
+            console.log('Приложение инициализировано');
+        });
+        
+        // ===============================
+        // ФУНКЦИИ ИНИЦИАЛИЗАЦИИ
+        // ===============================
+        
+        // Инициализация Telegram WebApp
+        function initTelegram() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                
+                // Расширяем на весь экран
+                tg.expand();
+                
+                // Можно получить данные пользователя
+                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    const user = tg.initDataUnsafe.user;
+                    
+                    // Сохраняем данные пользователя
+                    let username = 'Игрок';
+                    if (user.username) {
+                        username = user.username;
+                    } else if (user.first_name) {
+                        username = user.first_name;
+                        if (user.last_name) {
+                            username += ' ' + user.last_name;
+                        }
+                    }
+                    
+                    localStorage.setItem('telegram_username', username);
+                    localStorage.setItem('telegram_user_id', user.id || '');
+                    
+                    if (user.photo_url) {
+                        localStorage.setItem('telegram_avatar', user.photo_url);
+                    }
+                }
+                
+                console.log('Telegram WebApp инициализирован');
+            }
+        }
+        
         // Генерация ID пользователя
         function generateUserId() {
             return '#' + Math.floor(100000 + Math.random() * 900000);
         }
         
-        // Получение username из предыдущей страницы
-        function getUsernameFromStorage() {
+        // Получение username
+        function getUsername() {
+            // 1. Пробуем из Telegram
+            const telegramUsername = localStorage.getItem('telegram_username');
+            if (telegramUsername) return telegramUsername;
+            
+            // 2. Пробуем из URL параметров
             const urlParams = new URLSearchParams(window.location.search);
             const usernameFromUrl = urlParams.get('username');
+            if (usernameFromUrl) return usernameFromUrl;
+            
+            // 3. Пробуем из localStorage
             const usernameFromStorage = localStorage.getItem('username');
-            return usernameFromUrl || usernameFromStorage || 'Игрок';
+            if (usernameFromStorage) return usernameFromStorage;
+            
+            // 4. По умолчанию
+            return 'Игрок';
         }
         
-        // Загрузка данных из localStorage
+        // Загрузка данных пользователя
         function loadUserData() {
             const savedData = localStorage.getItem('userData');
+            
             if (savedData) {
                 userData = JSON.parse(savedData);
-                console.log('Данные загружены из localStorage:', userData);
+                console.log('Данные загружены из localStorage');
             } else {
-                // Новый пользователь
+                // Создаем нового пользователя
                 userData = {
-                    username: getUsernameFromStorage(),
+                    username: getUsername(),
                     userId: generateUserId(),
                     balance: 500,
                     level: 1,
@@ -1187,23 +1218,21 @@
                         joinDate: new Date().toISOString().split('T')[0]
                     }
                 };
-                console.log('Создан новый пользователь:', userData);
+                console.log('Создан новый пользователь');
             }
         }
         
-        // Сохранение данных в localStorage
+        // Сохранение данных пользователя
         function saveUserData() {
             localStorage.setItem('userData', JSON.stringify(userData));
-            console.log('Данные сохранены в localStorage');
         }
         
         // Инициализация интерфейса
         function initInterface() {
-            console.log('Инициализация интерфейса...');
-            
-            // Устанавливаем имя
-            document.getElementById('welcomeMessage').textContent = `Добро пожаловать, ${userData.username}!`;
-            document.getElementById('profileUsername').textContent = userData.username;
+            // Устанавливаем имя пользователя
+            const username = userData.username;
+            document.getElementById('welcomeMessage').textContent = `Добро пожаловать, ${username}!`;
+            document.getElementById('profileUsername').textContent = username;
             document.getElementById('profileUserId').textContent = `ID: ${userData.userId}`;
             document.getElementById('profileLevel').textContent = userData.level;
             document.getElementById('xpLevel').textContent = userData.level;
@@ -1223,21 +1252,146 @@
             // Загружаем инвентарь
             loadInventory();
             
-            // Сохраняем имя
-            localStorage.setItem('username', userData.username);
-            
-            console.log('Интерфейс инициализирован');
+            // Сохраняем имя в localStorage
+            localStorage.setItem('username', username);
         }
+        
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Кнопка крутки
+            document.getElementById('spinBtn').addEventListener('click', spinCase);
+            
+            // Кнопка OK в результате
+            document.getElementById('resultOkBtn').addEventListener('click', function() {
+                document.getElementById('resultContainer').classList.remove('active');
+                document.getElementById('spinBtn').disabled = false;
+            });
+            
+            // Кнопка сброса прогресса
+            document.getElementById('resetProgressBtn').addEventListener('click', function() {
+                document.getElementById('resetModal').classList.add('active');
+            });
+            
+            // Кнопки в модальном окне сброса
+            document.getElementById('cancelResetBtn').addEventListener('click', function() {
+                document.getElementById('resetModal').classList.remove('active');
+            });
+            
+            document.getElementById('confirmResetBtn').addEventListener('click', resetProgress);
+            
+            // Закрытие модальных окон по клику на оверлей
+            document.getElementById('resetModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+            
+            document.getElementById('resultContainer').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+            
+            // Обработчик ошибки загрузки звезды
+            const starIcon = document.getElementById('starIcon');
+            if (starIcon) {
+                starIcon.onerror = function() {
+                    this.style.display = 'none';
+                    const faStar = document.createElement('div');
+                    faStar.innerHTML = '<i class="fas fa-star"></i>';
+                    faStar.style.display = 'flex';
+                    faStar.style.alignItems = 'center';
+                    faStar.style.justifyContent = 'center';
+                    faStar.style.width = '20px';
+                    faStar.style.height = '20px';
+                    faStar.style.marginRight = '8px';
+                    faStar.style.color = '#FFD700';
+                    faStar.style.fontSize = '16px';
+                    this.parentNode.insertBefore(faStar, this);
+                };
+            }
+        }
+        
+        // Инициализация навигации
+        function initNavigation() {
+            // Находим элементы навигации
+            const navBar = document.getElementById('navBar');
+            const navHighlight = document.getElementById('navHighlight');
+            const navTabs = document.querySelectorAll('.navBarTab');
+            const screens = document.querySelectorAll('.screen');
+            
+            // Функция обновления подсветки
+            function updateNavHighlight(activeTab) {
+                const tabRect = activeTab.getBoundingClientRect();
+                const navRect = navBar.getBoundingClientRect();
+                const left = tabRect.left - navRect.left;
+                const width = tabRect.width;
+                
+                navHighlight.style.setProperty('--highlight-left', left + 'px');
+                navHighlight.style.setProperty('--highlight-width', width + 'px');
+            }
+            
+            // Функция переключения экранов
+            function switchScreen(screenId) {
+                // Скрываем все экраны
+                screens.forEach(screen => {
+                    screen.classList.remove('active');
+                });
+                
+                // Показываем выбранный экран
+                const activeScreen = document.getElementById(screenId + 'Screen');
+                if (activeScreen) {
+                    activeScreen.classList.add('active');
+                }
+                
+                // Обновляем активную вкладку
+                navTabs.forEach(tab => {
+                    if (tab.dataset.screen === screenId) {
+                        tab.classList.add('active');
+                        updateNavHighlight(tab);
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+                
+                // При переключении на инвентарь обновляем его
+                if (screenId === 'inventory') {
+                    loadInventory();
+                }
+            }
+            
+            // Добавляем обработчики на вкладки навигации
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const screenId = this.dataset.screen;
+                    switchScreen(screenId);
+                });
+            });
+            
+            // Инициализируем подсветку для активной вкладки
+            const activeTab = document.querySelector('.navBarTab.active');
+            if (activeTab) {
+                updateNavHighlight(activeTab);
+            }
+            
+            // Обновляем при изменении размера окна
+            window.addEventListener('resize', function() {
+                const activeTab = document.querySelector('.navBarTab.active');
+                if (activeTab) {
+                    updateNavHighlight(activeTab);
+                }
+            });
+            
+            console.log('Навигация инициализирована');
+        }
+        
+        // ===============================
+        // ФУНКЦИИ ИНТЕРФЕЙСА
+        // ===============================
         
         // Загрузка наград кейса
         function loadCaseRewards() {
-            console.log('Загрузка наград кейса...');
-            
             const caseRewards = document.getElementById('caseRewards');
-            if (!caseRewards) {
-                console.error('Элемент caseRewards не найден!');
-                return;
-            }
             
             caseRewards.innerHTML = `
                 <div class="case-rewards-title">Подарки в кейсе (2 предмета)</div>
@@ -1255,7 +1409,7 @@
             // Обработка ошибок загрузки изображений
             document.querySelectorAll('.reward-icon').forEach(img => {
                 img.onerror = function() {
-                    console.log(`Ошибка загрузки изображения: ${this.src}`);
+                    console.log(`Ошибка загрузки: ${this.src}`);
                     this.style.display = 'none';
                     const parent = this.parentNode;
                     const icon = document.createElement('i');
@@ -1266,8 +1420,6 @@
                     parent.insertBefore(icon, this);
                 };
             });
-            
-            console.log('Награды кейса загружены');
         }
         
         // Обновление баланса
@@ -1281,7 +1433,6 @@
             
             if (spinBtn) {
                 spinBtn.disabled = userData.balance < caseConfig.cost;
-                console.log(`Баланс: ${userData.balance}, Крутка доступна: ${!spinBtn.disabled}`);
             }
         }
         
@@ -1318,7 +1469,6 @@
         // Загрузка инвентаря
         function loadInventory() {
             const inventoryContent = document.getElementById('inventoryContent');
-            if (!inventoryContent) return;
             
             if (userData.inventory.length === 0) {
                 inventoryContent.innerHTML = `
@@ -1340,7 +1490,7 @@
                             <img src="${item.icon}" class="inventory-item-icon" alt="${item.name}" />
                             <div class="inventory-item-name">${item.name}</div>
                             <div class="inventory-item-price">${item.price.toLocaleString('ru-RU')} <i class="fas fa-star" style="color: #FFD700;"></i></div>
-                            <button class="inventory-item-sell" onclick="sellItem(${index})">
+                            <button class="inventory-item-sell" data-item-index="${index}">
                                 <i class="fas fa-coins"></i> Продать
                             </button>
                         </div>
@@ -1361,12 +1511,22 @@
                     parent.insertBefore(icon, this);
                 };
             });
+            
+            // Добавляем обработчики для кнопок продажи
+            document.querySelectorAll('.inventory-item-sell').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemIndex = parseInt(this.dataset.itemIndex);
+                    sellItem(itemIndex);
+                });
+            });
         }
+        
+        // ===============================
+        // ФУНКЦИИ ЛОГИКИ ПРИЛОЖЕНИЯ
+        // ===============================
         
         // Крутка кейса
         function spinCase() {
-            console.log('Начало крутки...');
-            
             // Проверяем баланс
             if (userData.balance < caseConfig.cost) {
                 showNotification('Недостаточно звезд', `Для крутки нужно ${caseConfig.cost} звезд`);
@@ -1397,7 +1557,6 @@
                 
                 // Выбираем случайный подарок
                 const reward = getRandomReward();
-                console.log('Выпал подарок:', reward);
                 
                 // Добавляем в инвентарь
                 addToInventory(reward);
@@ -1410,13 +1569,10 @@
         // Выбор случайного подарка
         function getRandomReward() {
             const random = Math.random();
-            console.log(`Случайное число: ${random}`);
             
             if (random < 0.5) {
-                console.log('Выбран Plush Pepe');
                 return { ...caseConfig.rewards[0] };
             } else {
-                console.log('Выбран kolobok');
                 return { ...caseConfig.rewards[1] };
             }
         }
@@ -1436,8 +1592,6 @@
             saveUserData();
             updateXpBar();
             updateStats();
-            
-            console.log(`Подарок "${reward.name}" добавлен в инвентарь`);
         }
         
         // Проверка повышения уровня
@@ -1560,132 +1714,6 @@
                 notification.classList.remove('active');
             }, 3000);
         }
-        
-        // Настройка подсветки навигации
-        function updateNavHighlight(activeTab) {
-            const navBar = document.getElementById('navBar');
-            const navHighlight = document.getElementById('navHighlight');
-            
-            const tabRect = activeTab.getBoundingClientRect();
-            const navRect = navBar.getBoundingClientRect();
-            const left = tabRect.left - navRect.left;
-            const width = tabRect.width;
-            
-            navHighlight.style.setProperty('--highlight-left', left + 'px');
-            navHighlight.style.setProperty('--highlight-width', width + 'px');
-        }
-        
-        // Переключение экранов
-        function switchScreen(screenId) {
-            // Скрываем все экраны
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            
-            // Показываем выбранный экран
-            const activeScreen = document.getElementById(screenId + 'Screen');
-            if (activeScreen) {
-                activeScreen.classList.add('active');
-            }
-            
-            // Обновляем активную вкладку
-            document.querySelectorAll('.navBarTab').forEach(tab => {
-                if (tab.dataset.screen === screenId) {
-                    tab.classList.add('active');
-                    updateNavHighlight(tab);
-                } else {
-                    tab.classList.remove('active');
-                }
-            });
-            
-            // При переключении на инвентарь обновляем его
-            if (screenId === 'inventory') {
-                loadInventory();
-            }
-        }
-        
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM загружен, инициализация...');
-            
-            // Загружаем данные
-            loadUserData();
-            initInterface();
-            
-            // Обработчики событий
-            document.getElementById('spinBtn').addEventListener('click', spinCase);
-            document.getElementById('resultOkBtn').addEventListener('click', function() {
-                document.getElementById('resultContainer').classList.remove('active');
-                document.getElementById('spinBtn').disabled = false;
-            });
-            
-            // Обработчики для кнопки сброса прогресса
-            document.getElementById('resetProgressBtn').addEventListener('click', function() {
-                document.getElementById('resetModal').classList.add('active');
-            });
-            
-            document.getElementById('cancelResetBtn').addEventListener('click', function() {
-                document.getElementById('resetModal').classList.remove('active');
-            });
-            
-            document.getElementById('confirmResetBtn').addEventListener('click', resetProgress);
-            
-            // Закрытие модальных окон по клику на оверлей
-            document.getElementById('resetModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                }
-            });
-            
-            document.getElementById('resultContainer').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                }
-            });
-            
-            // Обработчики навигации
-            document.querySelectorAll('.navBarTab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    switchScreen(this.dataset.screen);
-                });
-            });
-            
-            // Обработчик ошибки загрузки звезды PNG
-            const starIcon = document.getElementById('starIcon');
-            if (starIcon) {
-                starIcon.onerror = function() {
-                    this.style.display = 'none';
-                    const faStar = document.createElement('div');
-                    faStar.innerHTML = '<i class="fas fa-star"></i>';
-                    faStar.style.display = 'flex';
-                    faStar.style.alignItems = 'center';
-                    faStar.style.justifyContent = 'center';
-                    faStar.style.width = '20px';
-                    faStar.style.height = '20px';
-                    faStar.style.marginRight = '8px';
-                    faStar.style.color = '#FFD700';
-                    faStar.style.fontSize = '16px';
-                    this.parentNode.insertBefore(faStar, this);
-                };
-            }
-            
-            // Обновляем при изменении размера окна
-            window.addEventListener('resize', function() {
-                const activeTab = document.querySelector('.navBarTab.active');
-                if (activeTab) updateNavHighlight(activeTab);
-            });
-            
-            // Инициализируем навигацию
-            const activeTab = document.querySelector('.navBarTab.active');
-            if (activeTab) updateNavHighlight(activeTab);
-            
-            console.log('Приложение инициализировано');
-            console.log('Конфиг кейса:', caseConfig);
-            console.log('Данные пользователя:', userData);
-        });
-        
-        // Делаем функции глобальными для обработчиков onclick
-        window.sellItem = sellItem;
     </script>
 </body>
 </html>
